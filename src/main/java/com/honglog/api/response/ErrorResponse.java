@@ -1,28 +1,30 @@
 package com.honglog.api.response;
 
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
-@RequiredArgsConstructor
 public class ErrorResponse {
 
     private final String code;
     private final String message;
-    private List<ValidationTuple> validation = new ArrayList<>();
+    private final Map<String, String> validation = new HashMap<>();
 
     public void addValidation(String fieldName, String errorMessage) {
-        validation.add(new ValidationTuple(fieldName, errorMessage));
+        this.validation.put(fieldName, errorMessage);
     }
 
-    @RequiredArgsConstructor
-    private class ValidationTuple {
-        private final String fieldName;
-        private final String errorMessage;
+    @Builder
+    public ErrorResponse(String code, String message) {
+        this.code = code;
+        this.message = message;
     }
-
 }

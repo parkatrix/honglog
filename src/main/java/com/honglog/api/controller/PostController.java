@@ -1,21 +1,24 @@
 package com.honglog.api.controller;
 
+import com.honglog.api.domain.Post;
 import com.honglog.api.request.PostCreate;
+import com.honglog.api.service.PostService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 public class PostController {
 
+
+    private final PostService postService;
+
     @GetMapping("/posts")
+
     public String get() {
         return "Hello World";
     }
@@ -23,8 +26,15 @@ public class PostController {
 
     // 글 등록
     @PostMapping("/posts")
-    public Map<String, String> post(@RequestBody @Valid PostCreate postCreate) {
+    public void post(@RequestBody @Valid PostCreate request) {
+        //저장한 데이터 리스폰스로 응답
+        postService.write(request);
+    }
 
-        return Map.of();
+    @GetMapping("/posts/{postId}")
+    public Post get(@PathVariable Long postId) {
+        //저장한 데이터 리스폰스로 응답
+        Post post = postService.get(postId);
+        return post;
     }
 }
