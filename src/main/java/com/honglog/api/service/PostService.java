@@ -3,6 +3,7 @@ package com.honglog.api.service;
 import com.honglog.api.domain.Post;
 import com.honglog.api.repository.PostRepository;
 import com.honglog.api.request.PostCreate;
+import com.honglog.api.response.PostResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,14 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public Post get(Long postId) {
+    public PostResponse get(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
-        return post;
+        return PostResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .build();
     }
 }

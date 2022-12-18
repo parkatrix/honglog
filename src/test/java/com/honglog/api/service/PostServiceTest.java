@@ -3,6 +3,7 @@ package com.honglog.api.service;
 import com.honglog.api.domain.Post;
 import com.honglog.api.repository.PostRepository;
 import com.honglog.api.request.PostCreate;
+import com.honglog.api.response.PostResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,9 +73,11 @@ class PostServiceTest {
 
         Post savedPost = postRepository.save(post);
 
-        Post findPost = postService.get(savedPost.getId());
+        PostResponse response = postService.get(savedPost.getId());
 
-        assertTrue(savedPost.equals(findPost));
+        assertNotNull(response);
+        assertThat(post.getContent()).isEqualTo(response.getContent());
+        assertThat(post.getTitle()).isEqualTo(response.getTitle());
     }
 
 }

@@ -119,11 +119,11 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 1개 조회")
+    @DisplayName("글 1개 조회, 제목은 10자 잘라서")
     void test4() throws Exception {
         //given
         Post post = Post.builder()
-                .title("foo")
+                .title("123456789012345")
                 .content("bar")
                 .build();
 
@@ -133,7 +133,7 @@ class PostControllerTest {
         mockMvc.perform(get("/posts/{postId}", post.getId())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("foo"))
+                .andExpect(jsonPath("$.title").value("1234567890"))
                 .andExpect(jsonPath("$.content").value("bar"))
                 .andDo(print());
     }

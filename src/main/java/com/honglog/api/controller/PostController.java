@@ -1,7 +1,7 @@
 package com.honglog.api.controller;
 
-import com.honglog.api.domain.Post;
 import com.honglog.api.request.PostCreate;
+import com.honglog.api.response.PostResponse;
 import com.honglog.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +31,11 @@ public class PostController {
         postService.write(request);
     }
 
+    @PostMapping("/posts")
+
     @GetMapping("/posts/{postId}")
-    public Post get(@PathVariable Long postId) {
+    public PostResponse get(@PathVariable Long postId) {
         //저장한 데이터 리스폰스로 응답
-        Post post = postService.get(postId);
-        return post;
+        return postService.get(postId);
     }
 }
