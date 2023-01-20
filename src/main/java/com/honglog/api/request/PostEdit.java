@@ -1,13 +1,13 @@
 package com.honglog.api.request;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
-@Setter
-@ToString
-public class PostCreate {
+@Builder
+public class PostEdit {
 
     @NotBlank(message = "타이틀을 입력해주세요")
     private String title;
@@ -16,9 +16,8 @@ public class PostCreate {
     private String content;
 
     @Builder
-    public PostCreate(String title, String content) {
+    public PostEdit(String title, String content) {
         this.title = title;
         this.content = content;
     }
-
 }

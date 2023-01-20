@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.honglog.api.domain.Post;
 import com.honglog.api.repository.PostRepository;
 import com.honglog.api.request.PostCreate;
+import com.honglog.api.request.PostEdit;
 import org.assertj.core.api.Assertions;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +15,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,6 +32,9 @@ class PostControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private PostRepository postRepository;
@@ -138,6 +146,132 @@ class PostControllerTest {
                 .andDo(print());
     }
 
+
+    @Test
+    @DisplayName("글 여러개 조회")
+    void test5() throws Exception {
+        //given
+        Post post1 = Post.builder()
+                .title("foo1")
+                .content("bar1")
+                .build();
+        Post post2 = Post.builder()
+                .title("foo2")
+                .content("bar2")
+                .build();
+        Post post3 = Post.builder()
+                .title("foo3")
+                .content("bar3")
+                .build();
+        postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
+
+        //when
+        mockMvc.perform(get("/posts")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", Matchers.is(3)))
+                .andExpect(jsonPath("$[0].id").value(post1.getId()))
+                .andExpect(jsonPath("$[0].title").value("foo1"))
+                .andExpect(jsonPath("$[0].content").value("bar1"))
+                .andExpect(jsonPath("$[1].id").value(post2.getId()))
+                .andExpect(jsonPath("$[1].title").value("foo2"))
+                .andExpect(jsonPath("$[1].content").value("bar2"))
+                .andExpect(jsonPath("$[2].id").value(post3.getId()))
+                .andExpect(jsonPath("$[2].title").value("foo3"))
+                .andExpect(jsonPath("$[2].content").value("bar3"))
+                .andDo(print());
+
+
+    }
+
+    @Test
+    @DisplayName("글 페이지로 조회")
+    void test6() throws Exception {
+        //given
+        List<Post> requestPosts = IntStream.range(0, 30)
+                .mapToObj(value -> Post.builder().title("제목" + value).content("내용" + value).build())
+                .collect(Collectors.toList());
+
+        postRepository.saveAll(requestPosts);
+        //when
+        mockMvc.perform(get("/posts?page=1&size=3&sort=id,desc")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()",Matchers.is(3)))
+                .andExpect(jsonPath("$[0].title").value("제목29"))
+                .andExpect(jsonPath("$[0].content").value("내용29"))
+                .andDo(print());
+
+
+    }
+
+    @Test
+    @DisplayName("0 페이지로 조회")
+    void test7() throws Exception {
+        //given
+        List<Post> requestPosts = IntStream.range(0, 30)
+                .mapToObj(value -> Post.builder().title("제목" + value).content("내용" + value).build())
+                .collect(Collectors.toList());
+
+        postRepository.saveAll(requestPosts);
+        //when
+        mockMvc.perform(get("/posts?page=0&size=3")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()",Matchers.is(3)))
+                .andExpect(jsonPath("$[0].title").value("제목29"))
+                .andExpect(jsonPath("$[0].content").value("내용29"))
+                .andDo(print());
+
+
+    }
+
+    @Test
+    @DisplayName("글 제목 수정")
+    void test8() throws Exception {
+        //given
+        Post post = Post.builder()
+                .title("foo1")
+                .content("bar1")
+                .build();
+
+        postRepository.save(post);
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("foo1")
+                .content("BAR1")
+                .build();
+
+        //when
+        mockMvc.perform(patch("/posts/{postId}", post.getId())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").value("BAR1"))
+                .andExpect(jsonPath("$.title").value("foo1"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 삭제")
+    void test9() throws Exception {
+        //given
+        Post post = Post.builder()
+                .title("foo1")
+                .content("bar1")
+                .build();
+
+        postRepository.save(post);
+
+
+        //when
+        mockMvc.perform(delete("/posts/{postId}", post.getId())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 
 
 
