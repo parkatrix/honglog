@@ -1,5 +1,6 @@
 package com.honglog.api.controller;
 
+import com.honglog.api.exception.InvalidRequest;
 import com.honglog.api.request.PostCreate;
 import com.honglog.api.request.PostEdit;
 import com.honglog.api.request.PostSearch;
@@ -28,6 +29,9 @@ public class PostController {
     // 글 등록
     @PostMapping("/posts")
     public void post(@RequestBody @Valid PostCreate request) {
+
+        request.validate();
+
         //저장한 데이터 리스폰스로 응답
         postService.write(request);
     }

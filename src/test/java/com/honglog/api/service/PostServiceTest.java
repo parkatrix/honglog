@@ -1,12 +1,12 @@
 package com.honglog.api.service;
 
 import com.honglog.api.domain.Post;
+import com.honglog.api.exception.PostNotFound;
 import com.honglog.api.repository.PostRepository;
 import com.honglog.api.request.PostCreate;
 import com.honglog.api.request.PostEdit;
 import com.honglog.api.request.PostSearch;
 import com.honglog.api.response.PostResponse;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ class PostServiceTest {
         //given
         Long postId = 1L;
         //then
-        assertThrows(IllegalArgumentException.class, () -> postService.get(postId));
+        assertThrows(PostNotFound.class, () -> postService.get(postId));
 
     }
 
@@ -211,9 +211,62 @@ class PostServiceTest {
         postService.delete(post.getId());
 
         //then
-
         assertThat(postRepository.count()).isEqualTo(0);
+    }
 
+
+    @Test
+    @DisplayName("글 1개 조회 - 존재하지 않는 글")
+    void test10() {
+        //given
+        Post post = Post.builder()
+                .title("foo")
+                .content("bar")
+                .build();
+
+        postRepository.save(post);
+
+        assertThrows(PostNotFound.class, () -> postService.get(post.getId() + 1L));
 
     }
+
+    @Test
+    @DisplayName("글 삭제 - 존재하지 않는 글")
+    void test11() {
+        //given
+        Post post = Post.builder()
+                .title("foo1")
+                .content("bar1")
+                .build();
+
+        postRepository.save(post);
+
+        //when
+        assertThrows(PostNotFound.class, () -> postService.delete(post.getId() + 1L));
+
+    }
+
+    @Test
+    @DisplayName("글 내용 수정 - 존재하지 않는 글")
+    void test12() {
+        //given
+        Post post = Post.builder()
+                .title("foo1")
+                .content("bar1")
+                .build();
+
+        postRepository.save(post);
+
+        PostEdit postEdit = PostEdit.builder()
+                .title(null)
+                .content("BAR1")
+                .build();
+
+        //when
+        assertThrows(PostNotFound.class, () -> postService.edit(post.getId() + 1L, postEdit));
+
+    }
+
+
+
 }

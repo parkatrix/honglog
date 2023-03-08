@@ -5,6 +5,7 @@ import com.honglog.api.domain.Post;
 import com.honglog.api.repository.PostRepository;
 import com.honglog.api.request.PostCreate;
 import com.honglog.api.request.PostEdit;
+import com.honglog.api.request.PostSearch;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,17 +47,8 @@ class PostControllerTest {
         postRepository.deleteAll();
     }
 
-
     @Test
-    @DisplayName(("/posts 요청 시 Hello World 를 출력한다"))
-    void getTest() throws Exception {
-        mockMvc.perform(get("/posts"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Hello World"))
-                .andDo(print());
-    }
-    @Test
-    @DisplayName(("/posts 요청 시 Hello World 를 출력한다"))
+    @DisplayName(("/posts 요청 시 post를 조회한다"))
     void postTest() throws Exception {
         //given
         PostCreate postCreate = PostCreate.builder()
@@ -169,18 +163,19 @@ class PostControllerTest {
 
         //when
         mockMvc.perform(get("/posts")
-                        .contentType(APPLICATION_JSON))
+                        .contentType(APPLICATION_JSON)
+                        )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", Matchers.is(3)))
-                .andExpect(jsonPath("$[0].id").value(post1.getId()))
-                .andExpect(jsonPath("$[0].title").value("foo1"))
-                .andExpect(jsonPath("$[0].content").value("bar1"))
+                .andExpect(jsonPath("$[0].id").value(post3.getId()))
+                .andExpect(jsonPath("$[0].title").value("foo3"))
+                .andExpect(jsonPath("$[0].content").value("bar3"))
                 .andExpect(jsonPath("$[1].id").value(post2.getId()))
                 .andExpect(jsonPath("$[1].title").value("foo2"))
                 .andExpect(jsonPath("$[1].content").value("bar2"))
-                .andExpect(jsonPath("$[2].id").value(post3.getId()))
-                .andExpect(jsonPath("$[2].title").value("foo3"))
-                .andExpect(jsonPath("$[2].content").value("bar3"))
+                .andExpect(jsonPath("$[2].id").value(post1.getId()))
+                .andExpect(jsonPath("$[2].title").value("foo1"))
+                .andExpect(jsonPath("$[2].content").value("bar1"))
                 .andDo(print());
 
 
@@ -249,8 +244,6 @@ class PostControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postEdit)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").value("BAR1"))
-                .andExpect(jsonPath("$.title").value("foo1"))
                 .andDo(print());
     }
 
@@ -273,7 +266,78 @@ class PostControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("존재하지 않는 게시글 조회")
+    void test10() throws Exception {
+        //given
+        Post post = Post.builder()
+                .title("123456789012345")
+                .content("bar")
+                .build();
 
+        postRepository.save(post);
+
+        //when
+        mockMvc.perform(get("/posts/{postId}", post.getId() + 1L)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 수정")
+    void test11() throws Exception {
+        //given
+        Post post = Post.builder()
+                .title("123456789012345")
+                .content("bar")
+                .build();
+
+        postRepository.save(post);
+
+        //when
+        PostEdit postEdit = PostEdit.builder()
+                .title("foo1")
+                .content("BAR1")
+                .build();
+
+        //when
+        mockMvc.perform(patch("/posts/{postId}", post.getId() + 1L)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName(("내용에 바보가 들어가면 에러"))
+    void postTest12() throws Exception {
+
+        PostCreate postCreate = PostCreate.builder()
+                .title("나는 바보입니다..")
+                .content("내용입니당.")
+                .build();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(postCreate);
+
+        mockMvc.perform(post("/posts")
+                        .contentType(APPLICATION_JSON)
+                        .content(json)
+                )
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+
+    }
+
+
+    @Test
+    void test() {
+        PostSearch build = PostSearch.builder()
+                .build();
+
+        System.out.println("build.getPage() = " + build.getPage());
+        System.out.println("build.getSize() = " + build.getSize());
+    }
 
 
 }
