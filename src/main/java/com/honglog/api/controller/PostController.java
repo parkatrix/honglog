@@ -1,5 +1,6 @@
 package com.honglog.api.controller;
 
+import com.honglog.api.config.data.UserSession;
 import com.honglog.api.exception.InvalidRequest;
 import com.honglog.api.request.PostCreate;
 import com.honglog.api.request.PostEdit;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -21,8 +23,21 @@ public class PostController {
 
     private final PostService postService;
 
+    @GetMapping("/foo")
+    public Long foo(UserSession userSession) {
+        log.info(">>>{}", userSession.getId());
+        return userSession.getId();
+    }
+
+    @GetMapping("/bar")
+    public String bar(UserSession userSession) {
+
+        return "인증 노필요";
+    }
+
     @GetMapping("/posts")
     public List<PostResponse> getList(@ModelAttribute PostSearch postSearch) {
+
         return postService.getList(postSearch);
     }
 
@@ -31,15 +46,12 @@ public class PostController {
     public void post(@RequestBody @Valid PostCreate request) {
 
         request.validate();
-
-        //저장한 데이터 리스폰스로 응답
         postService.write(request);
     }
 
     @GetMapping("/posts/{postId}")
     public PostResponse get(@PathVariable Long postId) {
 
-        //저장한 데이터 리스폰스로 응답
         return postService.get(postId);
     }
 

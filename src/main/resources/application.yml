@@ -16,3 +16,11 @@ spring:
     web:
       pageable:
         one-indexed-parameters: true
+
+  jpa:
+    defer-datasource-initialization: true
+    show-sql: true
+
+
+secret:
+  key: 12345678901234567890123456789012

@@ -48,7 +48,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName(("/posts 요청 시 post를 조회한다"))
+    @DisplayName("글 작성 요청 시 post를 조회한다")
     void postTest() throws Exception {
         //given
         PostCreate postCreate = PostCreate.builder()
@@ -69,7 +69,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName(("/posts 요청 시 title 값은 필수여!!"))
+    @DisplayName(("글 작성 요청 시 title 값은 필수여!!"))
     void postTest2() throws Exception {
 
         PostCreate postCreate = PostCreate.builder()
@@ -91,7 +91,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName(("/posts 요청 시 DB에 값이 저장된다"))
+    @DisplayName(("글 작성 요청 시 DB에 값이 저장된다"))
     void postTest3() throws Exception {
 
         PostCreate postCreate = PostCreate.builder()
